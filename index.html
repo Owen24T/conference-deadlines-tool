@@ -98,7 +98,7 @@ function card(c){
 <div class="meta"><span class="${d&&!gone&&left<=14?'soon':''}">${due}</span>${c._kind==='Full paper'?sub('Abstract',fp.abstract,est):''}${sub('Notification',fp.notification,est)}</div>
 </div></summary>
 <div class="body">${est?'<div class="note">These dates are estimates based on last year’s call and may change. Check the conference page once the new call is out.</div>':''}
-<div class="scroll"><table><tr><th>Track</th><th>Abstract due</th><th>Full paper due</th><th>Notification</th></tr>${rows||'<tr><td colspan="4">No dates entered yet.</td></tr>'}</table></div>${link}</div></details>`;
+<div class="scroll"><table><tr><th>Track</th><th>Abstract due</th><th>Final submission due</th><th>Notification</th></tr>${rows||'<tr><td colspan="4">No dates entered yet.</td></tr>'}</table></div>${link}</div></details>`;
 }
 
 function render(){
