@@ -1,0 +1,96 @@
+{
+  "_note": "SAMPLE DATA: names, ranks and dates are illustrative only. Replace with your own. Dates are YYYY-MM-DD (use null if unknown). Set confirmed to false while dates are estimated from last year's call. fullPaper is the main track; add as many otherTracks as you need. Each track can have abstract, full and notification dates.",
+  "conferences": [
+    {
+      "name": "ITiCSE 2027",
+      "location": "Glasgow, Scotland",
+      "dates": "12-14 July 2027",
+      "rank": "B",
+      "confirmed": true,
+      "link": "https://iticse.acm.org/2027/",
+      "fullPaper": { "abstract": "2027-01-11", "full": "2027-01-18", "notification": "2027-03-8" },
+      "otherTracks": [
+        { "name": "Posters/DC", "abstract": null, "full": "2027-03-15", "notification": "2027-04-12" }
+      ]
+    },
+    {
+      "name": "Learning @ Scale 2027",
+      "location": "Adelaide, Australia",
+      "dates": "18-23 July 2027",
+      "rank": "B",
+      "confirmed": true,
+      "link": "https://learningatscale.hosting.acm.org/las2027/call-for-papers/",
+      "fullPaper": { "abstract": "2027-01-22", "full": "2027-01-29", "notification": "2027-03-31" },
+      "otherTracks": [
+        { "name": "Demos", "abstract": null, "full": "2027-04-14", "notification": "2027-04-28" }
+      ]
+    },
+    {
+      "name": "AIED 2027",
+      "location": "Adelaide, Australia",
+      "dates": "18-23 July 2027",
+      "rank": "A",
+      "confirmed": false,
+      "link": "https://iaied.org/conferences",
+      "fullPaper": { "abstract": "2027-01-22", "full": "2027-01-29", "notification": "2027-03-31" },
+      "otherTracks": [
+        { "name": "Demos", "abstract": null, "full": "2027-04-14", "notification": "2027-04-28" }
+      ]
+    },
+    {
+      "name": "IEEE Frontiers In Education 2027",
+      "location": "Dallas, USA",
+      "dates": "10-13 October 2027",
+      "rank": "C",
+      "confirmed": false,
+      "link": "",
+      "fullPaper": { "abstract": "2027-01-26", "abstract acceptance": "2027-02-13", "full": "2027-03-23", "notification": "2027-05-08" },
+      "otherTracks": []
+    },
+    {
+      "name": "ICER 2027",
+      "location": "Sacramento, USA",
+      "dates": "2-5 August 2027",
+      "rank": "A",
+      "confirmed": true,
+      "link": "https://2027.icer.acm.org/",
+      "fullPaper": { "abstract": "2027-04-02", "full": "2027-04-09", "notification": "2027-05-28" },
+      "otherTracks": []
+    },
+    {
+      "name": "SIGCSE 2028",
+      "location": "???",
+      "dates": "???",
+      "rank": "A",
+      "confirmed": false,
+      "link": "",
+      "fullPaper": { "abstract": "2027-06-26", "full": "2027-07-03", "notification": "2027-09-14" },
+      "otherTracks": [ { "name": "Posters/DC/Demos", "abstract": null, "full": "2027-09-30", "notification": "2027-11-09" } ]
+    },
+    {
+      "name": "Koli Calling 2027",
+      "location": "???",
+      "dates": "???",
+      "rank": "?",
+      "confirmed": false,
+      "link": "",
+      "fullPaper": { "abstract": null, "full": "2027-07-12", "notification": "2027-08-30" },
+      "otherTracks": [ { "name": "Posters/Demos", "abstract": null, "full": "2027-09-06", "notification": "2027-09-20" } ]
+    },
+    {
+      "name": "LAK 2028",
+      "location": "???",
+      "dates": "???",
+      "rank": "A",
+      "confirmed": false,
+      "link": "",
+      "fullPaper": { "abstract": "2027-09-21", "full": "2027-09-28", "notification": "2027-11-24" },
+      "otherTracks": [ {"name": "Posters/Demos", "abstract": null, "full": "2027-11-09", "notification": "2027-12-01" },
+        {"name": "DC", "abstract": null, "full": "2027-10-13", "notification": "2027-12-01" }
+      ]
+    }
+  ]
+}
+
+
+
