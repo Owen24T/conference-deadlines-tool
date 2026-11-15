@@ -52,19 +52,24 @@ th{color:var(--mute);font-size:.85rem}
 .msg{padding:18px}
 @media(max-width:600px){.body{padding-left:18px}.blk{width:60px}}
 @media(prefers-reduced-motion:reduce){summary::after{transition:none}}
+section{margin-bottom:26px}
+h2{position:sticky;top:0;z-index:1;margin:0 0 10px;padding:10px 0;background:var(--bg);font-size:1.3rem}
+.divider{margin:40px 0 18px;padding-top:16px;border-top:1px solid var(--line);color:var(--mute);font-weight:700}
+.past .name{color:var(--mute)}
+.msg{background:var(--card);border:1px solid var(--line);border-radius:12px}
 </style>
 </head>
 <body>
 <div class="wrap">
 <h1>Conference deadlines</h1>
-<p class="sub">Where our group can publish computer science education research, soonest deadline first. Select a conference for every track and date.</p>
+<p class="sub">Full paper deadlines by month, soonest first. Select a conference to see every track, date and link.</p>
 <div class="bar">
 <input type="search" id="q" placeholder="Search by name or location" aria-label="Search conferences">
 <select id="rank" aria-label="Filter by ICORE rank"></select>
 <label><input type="checkbox" id="hide"> Hide closed</label>
 </div>
 <p class="legend"><span><i class="sw"></i>Confirmed dates</span><span><i class="sw est"></i>Estimated from last year’s call (marked ~), not yet confirmed</span></p>
-<div class="list" id="list"></div>
+<div id="list"></div>
 </div>
 <script>
 const $=s=>document.querySelector(s);
@@ -76,26 +81,21 @@ const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&g
 const tracksOf=c=>[{name:'Full papers',...c.fullPaper},...(c.otherTracks||[])];
 let DATA=[];
 
-function nextOf(c){
-  let best=null;
-  for(const t of tracksOf(c))for(const k of['abstract','full']){
-    const d=parse(t[k]);
-    if(d&&d>=today&&(!best||d<best.d))best={d,label:t.name+(k==='abstract'?' abstract':'')};
-  }
-  return best;
-}
+const mlong=new Intl.DateTimeFormat('en-AU',{month:'long',year:'numeric'}),wk=new Intl.DateTimeFormat('en-AU',{weekday:'short'});
 const dt=(s,est)=>{const d=parse(s);return d?`<span class="dt${est?' est':''}${d<today?' past':''}">${est?'~ ':''}${fmt.format(d)}</span>`:'<span class="na">–</span>'};
+const sub=(label,s,est)=>parse(s)?`<span>${label} ${est?'~ ':''}${fmt.format(parse(s))}</span>`:'';
 
 function card(c){
-  const est=c.confirmed===false,n=c._next,left=n&&Math.round((n.d-today)/864e5);
-  const blk=n?`<span class="blk ${est?'est':'ok'}"><b>${est?'~':''}${n.d.getDate()}</b><i>${mon.format(n.d)} ${n.d.getFullYear()}</i></span>`:'<span class="blk gone"><b>–</b><i>Closed</i></span>';
-  const when=left===0?'today':left===1?'tomorrow':`in ${left} days`;
+  const est=c.confirmed===false,d=c._key,left=d&&Math.round((d-today)/864e5),gone=d&&left<0;
+  const blk=d?`<span class="blk ${gone?'gone':est?'est':'ok'}"><b>${est?'~':''}${d.getDate()}</b><i>${est?'est.':wk.format(d)}</i></span>`:'<span class="blk gone"><b>–</b><i>TBC</i></span>';
+  const due=!d?'No full paper date yet':gone?`${c._kind} deadline passed`:`${c._kind} due ${left===0?'today':left===1?'tomorrow':`in ${left} days`}`;
+  const fp=c.fullPaper||{};
   const rows=tracksOf(c).filter(t=>t.abstract||t.full||t.notification).map(t=>`<tr><td>${esc(t.name)}</td><td>${dt(t.abstract,est)}</td><td>${dt(t.full,est)}</td><td>${dt(t.notification,est)}</td></tr>`).join('');
   const link=/^https?:\/\//.test(c.link||'')?`<a class="btn" href="${esc(c.link)}" target="_blank" rel="noopener">Open conference page</a>`:'';
   return `<details><summary>${blk}<div class="main">
 <div class="head"><span class="name">${esc(c.name)}</span>${c.rank?`<span class="tag rank">ICORE ${esc(c.rank)}</span>`:''}<span class="tag ${est?'est':'ok'}">${est?'Estimated':'Confirmed'}</span></div>
 <div class="meta">${c.location?`<span>${esc(c.location)}</span>`:''}${c.dates?`<span>${esc(c.dates)}</span>`:''}</div>
-<div class="next">${n?`Next: ${esc(n.label)} due <span class="${left<=14?'soon':''}">${when}</span>`:'No upcoming deadlines'}</div>
+<div class="meta"><span class="${d&&!gone&&left<=14?'soon':''}">${due}</span>${c._kind==='Full paper'?sub('Abstract',fp.abstract,est):''}${sub('Notification',fp.notification,est)}</div>
 </div></summary>
 <div class="body">${est?'<div class="note">These dates are estimates based on last year’s call and may change. Check the conference page once the new call is out.</div>':''}
 <div class="scroll"><table><tr><th>Track</th><th>Abstract due</th><th>Full paper due</th><th>Notification</th></tr>${rows||'<tr><td colspan="4">No dates entered yet.</td></tr>'}</table></div>${link}</div></details>`;
@@ -103,13 +103,19 @@ function card(c){
 
 function render(){
   const q=$('#q').value.toLowerCase(),r=$('#rank').value,h=$('#hide').checked;
-  const list=DATA.filter(c=>(!r||c.rank===r)&&(!h||c._next)&&`${c.name} ${c.location}`.toLowerCase().includes(q));
-  $('#list').innerHTML=list.length?list.map(card).join(''):'<div class="msg">No conferences match. Clear the search or filters to see them all.</div>';
+  const list=DATA.filter(c=>(!r||c.rank===r)&&`${c.name} ${c.location}`.toLowerCase().includes(q));
+  const up=list.filter(c=>c._key&&c._key>=today),past=list.filter(c=>c._key&&c._key<today),tbc=list.filter(c=>!c._key);
+  const groups=a=>{const m=new Map();for(const c of a){const k=mlong.format(c._key);(m.get(k)||m.set(k,[]).get(k)).push(c)}return[...m]};
+  const sec=(t,a,cls='')=>`<section class="${cls}"><h2>${t}</h2><div class="list">${a.map(card).join('')}</div></section>`;
+  let out=groups(up).map(([t,a])=>sec(t,a)).join('');
+  if(!h&&past.length)out+='<p class="divider">Closed</p>'+groups(past).reverse().map(([t,a])=>sec(t,a,'past')).join('');
+  if(tbc.length)out+=sec('No full paper date yet',tbc);
+  $('#list').innerHTML=out||'<div class="msg">No conferences match. Clear the search or filters to see them all.</div>';
 }
 
 function init(json){
-  DATA=(json.conferences||json).map(c=>({...c,_next:nextOf(c)}))
-    .sort((a,b)=>(a._next?a._next.d:1e15)-(b._next?b._next.d:1e15)||a.name.localeCompare(b.name));
+  DATA=(json.conferences||json).map(c=>{const fp=c.fullPaper||{},full=parse(fp.full);return{...c,_key:full||parse(fp.abstract),_kind:full?'Full paper':'Abstract'}})
+    .sort((a,b)=>(a._key||1e15)-(b._key||1e15)||a.name.localeCompare(b.name));
   const ranks=[...new Set(DATA.map(c=>c.rank).filter(Boolean))].sort();
   $('#rank').innerHTML='<option value="">All ICORE ranks</option>'+ranks.map(x=>`<option>${esc(x)}</option>`).join('');
   render();
