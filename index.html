@@ -57,20 +57,61 @@ h2{position:sticky;top:0;z-index:1;margin:0 0 10px;padding:10px 0;background:var
 .divider{margin:40px 0 18px;padding-top:16px;border-top:1px solid var(--line);color:var(--mute);font-weight:700}
 .past .name{color:var(--mute)}
 .msg{background:var(--card);border:1px solid var(--line);border-radius:12px}
+:root{--estf:#f6c453;--estf2:#fbdc8e}
+@media(prefers-color-scheme:dark){:root{--estf:#f0b45f;--estf2:#cf9743}}
+.wide .wrap{max-width:1180px}
+.legend[hidden]{display:none}
+.seg{display:flex;margin-left:auto;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--card)}
+.seg button{font:inherit;padding:8px 14px;border:0;background:none;color:var(--mute);cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--acc);color:var(--bg);font-weight:700}
+.seg button:focus-visible{outline:2px solid var(--acc);outline-offset:-4px}
+.tl-wrap{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow-x:auto;margin-bottom:14px}
+.tl{display:grid;position:relative;grid-template-columns:var(--lw) 1fr var(--dw);min-width:820px;--lw:170px;--dw:112px;--pad:60px}
+.tl-grid{position:absolute;top:0;bottom:0;left:var(--lw);right:var(--dw);pointer-events:none}
+.gi{position:absolute;top:0;bottom:0;left:var(--pad);right:var(--pad)}
+.tl .lab,.tl .pl,.tl .due{border-bottom:1px solid var(--line)}
+.tl .lab{position:sticky;left:0;z-index:2;background:var(--card);padding:6px 12px;display:flex;flex-direction:column;justify-content:center;min-width:0}
+.tl .lab b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tl .lab a{color:inherit;text-decoration:none}
+.tl .lab a:hover{text-decoration:underline}
+.tl .lab small{color:var(--mute)}
+.pl{position:relative;height:56px}
+.due{display:flex;align-items:center;padding:0 12px}
+.tl .h{height:46px;color:var(--mute);font-size:.85rem}
+.ml{position:absolute;top:0;bottom:0;border-left:1px solid var(--line)}
+.mlab{position:absolute;top:6px;padding-left:4px;font-size:.75rem;color:var(--mute);white-space:nowrap}
+.today{position:absolute;top:0;bottom:0;border-left:2px solid var(--acc)}
+.tlt{position:absolute;bottom:4px;transform:translateX(-50%);padding:0 8px;border-radius:99px;background:var(--acc);color:var(--bg);font-size:.7rem;font-weight:700}
+.gb,.tail,.tick{position:absolute;top:50%;height:22px;margin-top:-11px}
+.gb{min-width:10px;border-radius:6px}
+.gb.ok{background:var(--ok)}
+.gb.est{background:repeating-linear-gradient(135deg,var(--estf) 0 6px,var(--estf2) 6px 12px);border:2px dashed var(--est)}
+.gb.open{border-radius:6px 0 0 6px;border-right:0}
+.tail{min-width:8px;border-radius:0 6px 6px 0}
+.tail.ok{background:linear-gradient(90deg,var(--ok),transparent)}
+.tail.est{background:linear-gradient(90deg,var(--estf),transparent)}
+.tick{width:3px;margin-left:-1.5px;border-radius:2px;background:var(--card)}
+.gb.est+.tick{background:#142036}
+.dl{position:absolute;top:50%;transform:translateY(-50%);font-size:.75rem;color:var(--mute);white-space:nowrap}
+.gi.done{opacity:.55}
+.sw2{display:inline-block;width:26px;height:12px;border-radius:4px;vertical-align:-1px;margin-right:6px}
+.sw2.ok{background:var(--ok)}
+.sw2.est{background:repeating-linear-gradient(135deg,var(--estf) 0 5px,var(--estf2) 5px 10px);border:1px dashed var(--est)}
+.sw2.fade{background:linear-gradient(90deg,var(--ok),transparent)}
+.sw2.tk{background:linear-gradient(90deg,var(--ok) 55%,var(--card) 55% 68%,var(--ok) 68%)}
 </style>
 </head>
 <body>
 <div class="wrap">
 <h1>Conference deadlines</h1>
-<p class="sub">Full paper deadlines by month, soonest first. Select a conference to see every track, date and link. <b class="" style="color: yellow;">This is a work in progress app. Please contact Owen Tang (owen.tang1@unsw.edu.au) for any feedback or suggestions.</b>
-</p>
-
+<p class="sub">Full paper deadlines by month or on a timeline. In the month view, select a conference to see every track, date and link.</p>
 <div class="bar">
 <input type="search" id="q" placeholder="Search by name or location" aria-label="Search conferences">
 <select id="rank" aria-label="Filter by ICORE rank"></select>
 <label><input type="checkbox" id="hide"> Hide closed</label>
+<div class="seg" role="group" aria-label="View"><button type="button" data-v="list" aria-pressed="true">By month</button><button type="button" data-v="tl" aria-pressed="false">Timeline</button></div>
 </div>
-<p class="legend"><span><i class="sw"></i>Confirmed dates</span><span><i class="sw est"></i>Estimated from last year’s call (marked ~), not yet confirmed</span></p>
+<p class="legend" id="lg"><span><i class="sw"></i>Confirmed dates</span><span><i class="sw est"></i>Estimated from last year’s call (marked ~), not yet confirmed</span></p>
 <div id="list"></div>
 </div>
 <script>
@@ -100,12 +141,60 @@ function card(c){
 <div class="meta"><span class="${d&&!gone&&left<=14?'soon':''}">${due}</span>${c._kind==='Full paper'?sub('Abstract',fp.abstract,est):''}${sub('Notification',fp.notification,est)}</div>
 </div></summary>
 <div class="body">${est?'<div class="note">These dates are estimates based on last year’s call and may change. Check the conference page once the new call is out.</div>':''}
-<div class="scroll"><table><tr><th>Track</th><th>Abstract due</th><th>Final submission due</th><th>Notification</th></tr>${rows||'<tr><td colspan="4">No dates entered yet.</td></tr>'}</table></div>${link}</div></details>`;
+<div class="scroll"><table><tr><th>Track</th><th>Abstract due</th><th>Full paper due</th><th>Notification</th></tr>${rows||'<tr><td colspan="4">No dates entered yet.</td></tr>'}</table></div>${link}</div></details>`;
+}
+
+let VIEW='list';
+const D=864e5,dm=new Intl.DateTimeFormat('en-AU',{day:'numeric',month:'short'});
+document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{
+  VIEW=b.dataset.v;
+  document.querySelectorAll('.seg button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  document.body.classList.toggle('wide',VIEW==='tl');
+  $('#lg').hidden=VIEW==='tl';
+  if(DATA.length)render();
+});
+
+function timeline(list){
+  const rows=[],tbc=[];
+  for(const c of list){
+    if(!c._key){tbc.push(c);continue}
+    const fp=c.fullPaper||{},f=parse(fp.full),a=parse(fp.abstract),n=parse(fp.notification),s=a||f;
+    const hasN=!!n&&n>=s,solid=hasN?n:new Date(Math.max(s,f||s));
+    rows.push({c,fp,f,a,n,s,hasN,solid,end:hasN?n:new Date(+solid+42*D),est:c.confirmed===false});
+  }
+  const note=tbc.length?`<p class="legend">Not shown, no full paper dates yet: ${tbc.map(c=>esc(c.name)).join(', ')}</p>`:'';
+  if(!rows.length)return '<div class="msg">No conferences match. Clear the search or filters to see them all.</div>'+note;
+  const lo=new Date(Math.min(+today,...rows.map(r=>+r.s))),hi=new Date(Math.max(+today,...rows.map(r=>+r.end)));
+  const t0=new Date(lo.getFullYear(),lo.getMonth(),1),t1=new Date(hi.getFullYear(),hi.getMonth()+1,1);
+  const L=d=>((d-t0)/(t1-t0)*100).toFixed(2),ms=[];
+  for(let m=new Date(t0);m<t1;m=new Date(m.getFullYear(),m.getMonth()+1,1))ms.push(m);
+  const step=Math.ceil(ms.length/14);
+  const lines=ms.map(m=>`<span class="ml" style="left:${L(m)}%"></span>`).join('');
+  const labs=ms.map((m,i)=>i%step?'':`<span class="mlab" style="left:${L(m)}%">${mon.format(m)}${i===0||m.getMonth()===0?' '+m.getFullYear():''}</span>`).join('');
+  const body=rows.map(({c,fp,f,a,n,s,hasN,solid,end,est})=>{
+    const k=est?'est':'ok',pre=est?'~ ':'',done=hasN&&n<today;
+    const tip=c.name+': '+[a&&'abstract '+fmt.format(a),f&&'full paper '+fmt.format(f),hasN?'notification '+fmt.format(n):'notification date not announced'].filter(Boolean).join(', ')+(est?' (estimated from last year)':'');
+    const name=/^https?:\/\//.test(c.link||'')?`<a href="${esc(c.link)}" target="_blank" rel="noopener">${esc(c.name)}</a>`:esc(c.name);
+    return `<div class="lab"><b>${name}</b>${c.rank?`<small>ICORE ${esc(c.rank)}</small>`:''}</div>
+<div class="pl"><div class="gi${done?' done':''}" title="${esc(tip)}" role="img" aria-label="${esc(tip)}">
+<span class="dl" style="right:calc(100% - ${L(s)}% + 6px)">${pre}${dm.format(s)}</span>
+<span class="gb ${k}${hasN?'':' open'}" style="left:${L(s)}%;width:${(L(solid)-L(s)).toFixed(2)}%"></span>
+${f&&f>s&&f<=solid?`<span class="tick" style="left:${L(f)}%"></span>`:''}
+${hasN?'':`<span class="tail ${k}" style="left:${L(solid)}%;width:${(L(end)-L(solid)).toFixed(2)}%"></span>`}
+<span class="dl" style="left:calc(${L(end)}% + 6px)">${hasN?pre+dm.format(n):'TBC'}</span>
+</div></div>
+<div class="due">${dt(fp.full,est)}</div>`}).join('');
+  return `<div class="tl-wrap"><div class="tl">
+<div class="tl-grid"><div class="gi">${lines}<span class="today" style="left:${L(today)}%"></span></div></div>
+<div class="h lab"></div><div class="h pl"><div class="gi">${labs}<span class="tlt" style="left:${L(today)}%">Today</span></div></div><div class="h due">Full paper due</div>
+${body}</div></div>
+<p class="legend"><span><i class="sw2 ok"></i>Confirmed</span><span><i class="sw2 est"></i>Estimated from last year’s call</span><span><i class="sw2 fade"></i>Notification date not announced</span><span><i class="sw2 tk"></i>Full paper deadline</span></p>${note}`;
 }
 
 function render(){
   const q=$('#q').value.toLowerCase(),r=$('#rank').value,h=$('#hide').checked;
   const list=DATA.filter(c=>(!r||c.rank===r)&&`${c.name} ${c.location}`.toLowerCase().includes(q));
+  if(VIEW==='tl'){$('#list').innerHTML=timeline(list.filter(c=>!h||!c._key||c._key>=today));return}
   const up=list.filter(c=>c._key&&c._key>=today),past=list.filter(c=>c._key&&c._key<today),tbc=list.filter(c=>!c._key);
   const groups=a=>{const m=new Map();for(const c of a){const k=mlong.format(c._key);(m.get(k)||m.set(k,[]).get(k)).push(c)}return[...m]};
   const sec=(t,a,cls='')=>`<section class="${cls}"><h2>${t}</h2><div class="list">${a.map(card).join('')}</div></section>`;
