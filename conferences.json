@@ -30,11 +30,10 @@
       "location": "Adelaide, Australia",
       "dates": "18-23 July 2027",
       "rank": "A",
-      "confirmed": false,
-      "link": "https://iaied.org/conferences",
-      "fullPaper": { "abstract": "2027-01-22", "full": "2027-01-29", "notification": "2027-03-31" },
+      "confirmed": true,
+      "link": "https://www.aied-conference.org/2027",
+      "fullPaper": { "abstract": "2027-01-22", "full": "2027-02-01", "notification": "???" },
       "otherTracks": [
-        { "name": "Demos", "abstract": null, "full": "2027-04-14", "notification": "2027-04-28" }
       ]
     },
     {
